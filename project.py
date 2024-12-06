@@ -225,7 +225,7 @@ def integrate_function(function, a = 0, b = 2*np.pi):
     
     # https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.quad.html#scipy.integrate.quad
     if metodo_integracion == "quad":
-        res = integrate.quad(function, a, b)
+        res = integrate.quad(function, a, b, limit = 150)
         return res[0]
     
     # https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.fixed_quad.html#scipy.integrate.fixed_quad
