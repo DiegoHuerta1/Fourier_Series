@@ -745,14 +745,14 @@ with st.expander("Set parameters"):
     
     
     # ver si se va a querer descargar
-    descargar_animacion = st.checkbox(label = "Descargar la animacion", value = False)
+    descargar_animacion = st.checkbox(label = "Descargar la animacion", value = True)
     
     # si se quiere descargar
     if descargar_animacion:
         # segundos para el video a descargar
         segundos_animacion = st.slider("Duracion en segundos de la animacion (para descargar descargar)",
-                                 min_value= 2, max_value=300,
-                                 value=50, step=1)
+                                 min_value= 2, max_value=120,
+                                 value=10, step=1)
     
     
     # colores
@@ -962,11 +962,6 @@ if st.button("Analyze", type="primary"):
             file_name="animation.gif",
             mime="video/gif"
         )
-    
-    
-    
-
-
 
 
 
