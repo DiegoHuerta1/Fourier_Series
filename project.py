@@ -636,6 +636,10 @@ canvas_result = st_canvas(
 if canvas_result.json_data is not None:
     # hacer df
     objects = pd.json_normalize(canvas_result.json_data["objects"])
+# hacer objects vacio
+else:
+    objects = pd.DataFrame()
+    
         
 
 # si es que si hay df con cosas
