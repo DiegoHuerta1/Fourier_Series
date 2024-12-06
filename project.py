@@ -943,14 +943,13 @@ if st.button("Analyze", type="primary"):
         fps_animacion = int(frames_amimacion/segundos_animacion)
     
         # un truquito para poder descargar la animacion
-        with tempfile.NamedTemporaryFile(suffix=".gif", delete=False) as tmpfile:
-            metadata = dict(title="Animación", artist="Diego", comment="Animación de ejemplo")
+        with tempfile.NamedTemporaryFile(suffix=".gif", delete=False, dir=".") as tmpfile:
             
-            #writer = FFMpegWriter(fps=fps_animacion, metadata=metadata)
-            #anim_descargar.save(tmpfile.name, writer=writer, dpi= 400)
+            #writer = FFMpegWriter(fps=fps_animacion)
+            #anim_descargar.save(tmpfile.name, writer=writer)
             
-            writer = PillowWriter(fps=fps_animacion, metadata=metadata)
-            anim_descargar.save(tmpfile.name, writer=writer, dpi=400)
+            writer = PillowWriter(fps=fps_animacion)
+            anim_descargar.save(tmpfile.name, writer=writer)
             
             tmpfile.seek(0)  # Move to the beginning of the file
             # Load the content into a BytesIO object
