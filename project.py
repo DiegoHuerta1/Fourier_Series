@@ -16,7 +16,10 @@ import streamlit.components.v1 as components
 from streamlit_drawable_canvas import st_canvas
 import pandas as pd
 
-    
+
+from matplotlib.animation import FFMpegWriter
+import io
+import tempfile
 
 
 # -----------------------------------------------------------------------------------------
@@ -464,6 +467,112 @@ def obtener_puntos(commands):
             puntos.append((command[1], command[2]))  # Punto final de la línea
     return puntos
     
+
+
+
+
+# funcion para hacer la animacion
+def crear_animacion():
+    '''
+    Crear la animacion final
+    '''
+
+    # valores de t para la animacion
+    t_vals = np.linspace(0, 2*np.pi, frames_amimacion) 
+    
+    # definir un color para cada flecha
+    vector_colors = plt.cm.viridis(np.linspace(0, 1, len(coeficientes_fourier_f)))
+    
+    # Crear figura
+    fig, ax = plt.subplots(figsize=(8, 4))
+    
+    # cosas de estilo
+    ax.set_xlim(x_lim_graficas[0], x_lim_graficas[1])
+    ax.set_ylim(y_lim_graficas[0], y_lim_graficas[1])
+    ax.spines['right'].set_visible(False)
+    ax.spines['top'].set_visible(False)
+    ax.set_aspect("equal")
+    
+    # graficar la original (interpolacion mas bien)
+    ax.plot(fx_interpolacion_grafica, fy_interpolacion_grafica, color = color_interpolacion)
+    
+    # ver cuantas flechas hay (una por cada termino cn)
+    num_flechas = len(coeficientes_fourier_f)
+    # al principio, todas estan totalmente en el origen (0 + i0)
+    x_start = np.zeros(num_flechas)
+    y_start = np.zeros(num_flechas)
+    x_end = np.zeros(num_flechas)
+    y_end = np.zeros(num_flechas)
+    
+    # inicar las flechas, de entrada todas en el origen, con tamaño 0
+    quiver = ax.quiver(x_start, y_start, x_end, y_end, angles='xy', scale_units='xy', scale=1, color=vector_colors)
+    
+    # punto al final de todas las flechas
+    punto_final, = ax.plot([], [], marker='o', color= color_fourier)
+    # trayectoria marcada por la serie de fourier
+    posiciones_trayectoria_fourier = []
+    trayectoria_fourier, = ax.plot([], [], '-', color=color_fourier)
+
+    
+    
+    # funcion que hace update a la animacion
+    def update(frame):
+        """Actualizar la animación en cada frame."""
+        
+        # ver cual es el valor t de ese frame
+        t = t_vals[frame]
+        
+        # variables de interes:
+        
+        f_fourier_t = 0   # suma de todas las flechas
+        # Puntos iniciales de flechas
+        # la primera flecha inicia en el origen
+        x_start = [0]  
+        y_start = [0]
+        # Puntos finales de flechas
+        x_end = []  
+        y_end = []
+        
+        # por cada fleca (termino c_n e^{int})
+        for n, c_n in coeficientes_fourier_f.items():
+        
+            # calcular c_n e^{int}
+            termino_actual_n = c_n * np.exp(1j * n * t)
+          
+            # agregar a la suma de todas las flechas
+            f_fourier_t += termino_actual_n
+          
+            # la flecha actual termina en esta posicion 
+            x_end.append(f_fourier_t.real)
+            y_end.append(f_fourier_t.imag)
+            # y ahi mismo inicia la ultima flecha
+            x_start.append(f_fourier_t.real)
+            y_start.append(f_fourier_t.imag)
+        
+        # end for terminos cn
+        
+        # eliminar el ultimo final por redundancia
+        x_start.pop()  
+        y_start.pop()
+        # actualizar la posicion de las flechas
+        quiver.set_offsets(np.column_stack([x_start, y_start]))
+        quiver.set_UVC(np.array(x_end) - np.array(x_start), np.array(y_end) - np.array(y_start))
+        
+        
+        # poner el punto final en la posicion calculada, y agregarla a todas las de la taryectoria
+        punto_final.set_data([f_fourier_t.real], [f_fourier_t.imag])
+        posiciones_trayectoria_fourier.append((f_fourier_t.real, f_fourier_t.imag))
+        # actualizar la trayectoria
+        trayectoria_fourier.set_data(*zip(*posiciones_trayectoria_fourier))
+        
+        return quiver, punto_final, trayectoria_fourier
+    
+    # Crear la animación
+    animacion_fourier = FuncAnimation(fig, update, frames= frames_amimacion, blit=False, interval=50)
+    # devolver
+    return animacion_fourier
+
+
 # -----------------------------------------------------------------------------------------
 # ------------------------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------   
@@ -614,8 +723,8 @@ with st.expander("Set parameters"):
     
     # max n fourier
     n_fourier = st.slider("Max n for coeficients in fourier series",
-                          min_value= 0, max_value= 40,
-                          value=10, step=1)
+                          min_value= 0, max_value= 80,
+                          value=20, step=1)
     
     
     # numero de valores para graficar
@@ -627,6 +736,17 @@ with st.expander("Set parameters"):
     frames_amimacion = st.slider("Number of frames in animation",
                                  min_value = 10, max_value = 500,
                                  value = 200, step = 1)
+    
+    
+    # ver si se va a querer descargar
+    descargar_animacion = st.checkbox(label = "Descargar la animacion", value = True)
+    
+    # si se quiere descargar
+    if descargar_animacion:
+        # segundos para el video a descargar
+        segundos_animacion = st.slider("Duracion en segundos de la animacion (para descargar descargar)",
+                                 min_value= 2, max_value=300,
+                                 value=50, step=1)
     
     
     # colores
@@ -795,116 +915,44 @@ if st.button("Analyze", type="primary"):
         plt.tight_layout()
         st.pyplot(fig, use_container_width = True)
 
-        # ---------------------------------------------------------------
-        # ---------------------------------------------------------------
-        
-        # ANIMACION
-        
-        # valores de t para la animacion
-        t_vals = np.linspace(0, 2*np.pi, frames_amimacion) 
-        
-        # definir un color para cada flecha
-        vector_colors = plt.cm.viridis(np.linspace(0, 1, len(coeficientes_fourier_f)))
-        
-        # Crear figura
-        fig, ax = plt.subplots(figsize=(8, 4))
-        
-        # cosas de estilo
-        ax.set_xlim(x_lim_graficas[0], x_lim_graficas[1])
-        ax.set_ylim(y_lim_graficas[0], y_lim_graficas[1])
-        ax.spines['right'].set_visible(False)
-        ax.spines['top'].set_visible(False)
-        ax.set_aspect("equal")
-        
-        # graficar la original (interpolacion mas bien)
-        ax.plot(fx_interpolacion_grafica, fy_interpolacion_grafica, color = color_interpolacion)
-        
-        # ver cuantas flechas hay (una por cada termino cn)
-        num_flechas = len(coeficientes_fourier_f)
-        # al principio, todas estan totalmente en el origen (0 + i0)
-        x_start = np.zeros(num_flechas)
-        y_start = np.zeros(num_flechas)
-        x_end = np.zeros(num_flechas)
-        y_end = np.zeros(num_flechas)
-        
-        # inicar las flechas, de entrada todas en el origen, con tamaño 0
-        quiver = ax.quiver(x_start, y_start, x_end, y_end, angles='xy', scale_units='xy', scale=1, color=vector_colors)
-        
-        # punto al final de todas las flechas
-        punto_final, = ax.plot([], [], marker='o', color= color_fourier)
-        # trayectoria marcada por la serie de fourier
-        posiciones_trayectoria_fourier = []
-        trayectoria_fourier, = ax.plot([], [], '-', color=color_fourier)
-
-        
-        
-        # funcion que hace update a la animacion
-        def update(frame):
-            """Actualizar la animación en cada frame."""
-            
-            # ver cual es el valor t de ese frame
-            t = t_vals[frame]
-            
-            # variables de interes:
-            
-            f_fourier_t = 0   # suma de todas las flechas
-            # Puntos iniciales de flechas
-            # la primera flecha inicia en el origen
-            x_start = [0]  
-            y_start = [0]
-            # Puntos finales de flechas
-            x_end = []  
-            y_end = []
-            
-            # por cada fleca (termino c_n e^{int})
-            for n, c_n in coeficientes_fourier_f.items():
-            
-                # calcular c_n e^{int}
-                termino_actual_n = c_n * np.exp(1j * n * t)
-              
-                # agregar a la suma de todas las flechas
-                f_fourier_t += termino_actual_n
-              
-                # la flecha actual termina en esta posicion 
-                x_end.append(f_fourier_t.real)
-                y_end.append(f_fourier_t.imag)
-                # y ahi mismo inicia la ultima flecha
-                x_start.append(f_fourier_t.real)
-                y_start.append(f_fourier_t.imag)
-            
-            # end for terminos cn
-            
-            # eliminar el ultimo final por redundancia
-            x_start.pop()  
-            y_start.pop()
-            # actualizar la posicion de las flechas
-            quiver.set_offsets(np.column_stack([x_start, y_start]))
-            quiver.set_UVC(np.array(x_end) - np.array(x_start), np.array(y_end) - np.array(y_start))
-            
-            
-            # poner el punto final en la posicion calculada, y agregarla a todas las de la taryectoria
-            punto_final.set_data([f_fourier_t.real], [f_fourier_t.imag])
-            posiciones_trayectoria_fourier.append((f_fourier_t.real, f_fourier_t.imag))
-            # actualizar la trayectoria
-            trayectoria_fourier.set_data(*zip(*posiciones_trayectoria_fourier))
-            
-            return quiver, punto_final, trayectoria_fourier
-        
-        # Crear la animación
-        animacion_fourier = FuncAnimation(fig, update, frames= frames_amimacion, blit=False, interval=50)
-        
+     
         # ---------------------------------------------------------------
         # ---------------------------------------------------------------
     
     # end expander del analisis
     
+    
     # poner la animacion
     st.subheader("Animación")
-    components.html(animacion_fourier.to_jshtml(), height=1000)
-
-
-
-
+    animacion_mostrar = crear_animacion()
+    components.html(animacion_mostrar.to_jshtml(),  height = 500)
+    
+    # si se quiere descargar la animacion
+    if descargar_animacion:
+        
+        # hacer una animacion para descargar
+        anim_descargar = crear_animacion()
+    
+        # calcular los fps
+        fps_animacion = int(frames_amimacion/segundos_animacion)
+    
+        # un truquito para poder descargar la animacion
+        with tempfile.NamedTemporaryFile(suffix=".mp4", delete=False) as tmpfile:
+            anim_descargar.save(tmpfile.name, writer="ffmpeg", dpi= 400)  # Save the animation to the temp file
+            tmpfile.seek(0)  # Move to the beginning of the file
+            # Load the content into a BytesIO object
+            buffer = io.BytesIO(tmpfile.read())
+        
+        # un boton para poder descargar la animacion
+        st.download_button(
+            label="Download Animation",
+            data=buffer,
+            file_name="animation.mp4",
+            mime="video/mp4"
+        )
+    
+    
+    
 
 
 
