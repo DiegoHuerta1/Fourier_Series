@@ -22,10 +22,6 @@ import io
 import tempfile
 
 
-import imageio
-imageio.plugins.ffmpeg.download()
-
-
 # -----------------------------------------------------------------------------------------
 # ------------------------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------
@@ -946,7 +942,9 @@ if st.button("Analyze", type="primary"):
     
         # un truquito para poder descargar la animacion
         with tempfile.NamedTemporaryFile(suffix=".mp4", delete=False) as tmpfile:
-            anim_descargar.save(tmpfile.name, writer="ffmpeg", dpi= 400)  # Save the animation to the temp file
+            metadata = dict(title="Animación", artist="Diego", comment="Animación de ejemplo")
+            writer = FFMpegWriter(fps=15, metadata=metadata)
+            anim_descargar.save(tmpfile.name, writer=writer, dpi= 400)  # Save the animation to the temp file
             tmpfile.seek(0)  # Move to the beginning of the file
             # Load the content into a BytesIO object
             buffer = io.BytesIO(tmpfile.read())
