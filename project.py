@@ -18,6 +18,8 @@ import pandas as pd
 
 
 from matplotlib.animation import FFMpegWriter
+from matplotlib.animation import PillowWriter
+
 import io
 import tempfile
 
@@ -944,7 +946,9 @@ if st.button("Analyze", type="primary"):
         with tempfile.NamedTemporaryFile(suffix=".mp4", delete=False) as tmpfile:
             metadata = dict(title="Animación", artist="Diego", comment="Animación de ejemplo")
             writer = FFMpegWriter(fps=15, metadata=metadata)
-            anim_descargar.save(tmpfile.name, writer=writer, dpi= 400)  # Save the animation to the temp file
+            anim_descargar.save(tmpfile.name, writer=writer, dpi= 400)
+            #writer = PillowWriter(fps=15, metadata=metadata)
+            #anim_descargar.save("animacion.gif", writer=writer, dpi=400)
             tmpfile.seek(0)  # Move to the beginning of the file
             # Load the content into a BytesIO object
             buffer = io.BytesIO(tmpfile.read())
