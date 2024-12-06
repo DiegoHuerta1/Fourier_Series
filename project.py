@@ -614,8 +614,8 @@ with st.expander("Set parameters"):
     
     # max n fourier
     n_fourier = st.slider("Max n for coeficients in fourier series",
-                          min_value= 0, max_value= 20,
-                          value=5, step=1)
+                          min_value= 0, max_value= 40,
+                          value=10, step=1)
     
     
     # numero de valores para graficar
