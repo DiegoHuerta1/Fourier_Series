@@ -959,8 +959,8 @@ if st.button("Analyze", type="primary"):
         st.download_button(
             label="Download Animation",
             data=buffer,
-            file_name="animation.mp4",
-            mime="video/mp4"
+            file_name="animation.gif",
+            mime="video/gif"
         )
     
     
