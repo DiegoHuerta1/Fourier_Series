@@ -17,7 +17,7 @@ from streamlit_drawable_canvas import st_canvas
 import pandas as pd
 
 
-from matplotlib.animation import FFMpegWriter
+#from matplotlib.animation import FFMpegWriter
 from matplotlib.animation import PillowWriter
 
 import io
