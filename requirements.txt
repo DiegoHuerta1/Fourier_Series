@@ -4,4 +4,4 @@ scipy
 matplotlib
 pandas
 streamlit-drawable-canvas
-imageio[ffmpeg]
+imageio-ffmpeg
