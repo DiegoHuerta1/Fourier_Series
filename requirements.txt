@@ -7,3 +7,4 @@ streamlit-drawable-canvas
 imageio-ffmpeg
 ffmpeg
 ffmpeg-python
+Pillow
