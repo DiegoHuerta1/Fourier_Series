@@ -509,7 +509,7 @@ def crear_animacion():
     # inicar las flechas, de entrada todas en el origen, con tamaño 0
     quiver = ax.quiver(x_start, y_start, x_end, y_end, angles='xy', 
                        scale_units='xy', scale=1, color=vector_colors,
-                       headwidth = 2, headlength = 3, headaxislength = 2)
+                       headwidth = 2.5, headlength = 3, headaxislength = 2)
     
     # punto al final de todas las flechas
     punto_final, = ax.plot([], [], marker='o', color= color_fourier)
