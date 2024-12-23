@@ -704,7 +704,7 @@ with st.expander("Set parameters"):
     # distancia entre nodos para la parametrizacion
     metodo_dist_t_largo = st.selectbox(label = "Metodo para seleccionar distancia entre puntos al parametrizar con interpolación",
                                        options = ["Misma distancia", "Distancia en el plano"])
-    metodo_dist_t = {"Misma distancia":"equidistante", "Distancia en el plano":"equidistante"}[metodo_dist_t_largo]
+    metodo_dist_t = {"Misma distancia":"equidistante", "Distancia en el plano":"plano"}[metodo_dist_t_largo]
     
     # metodo interpolacion
     metodo_interpolacion_largo = st.selectbox(label = "Metodo para hacer interpolacion",
