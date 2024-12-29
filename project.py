@@ -238,14 +238,20 @@ class Barycentric_interpolation:
 
         # j = 0, ..., n
         for j in self.indices:
+
+            # caso especial donde t == t_j
+            if t == self.valores_t[j]:
+                return self.valores_f_t[j]
+
             # variable auxiliar: t - t_j
             aux = t - self.valores_t[j]
+
             # numerador y denomidador
             numerador += self.dict_f_t_times_w[j] / aux
             denominador += self.weights[j] / aux
 
         # devolver la division
-        return numerador/(denominador + np.finfo(float).eps)  # no dividir entre 0
+        return numerador/denominador
 
 
     # evaluar en varios
