@@ -233,8 +233,8 @@ class Barycentric_interpolation:
         Evaluar el polinomio de interpolacion en un valor t
         '''
         # calcular independientemente numerador y denominador
-        numerador = 1
-        denominador = 1
+        numerador = 0
+        denominador = 0
 
         # j = 0, ..., n
         for j in self.indices:
