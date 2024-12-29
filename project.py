@@ -151,7 +151,111 @@ class Lagrange_interpolation:
         '''
 
         # si es un solo valor
-        if isinstance(t_values, (float, int)):  
+        if isinstance(t_values, (float, int)):
+            return self.evaluar_P_single_t(t_values)
+
+        # si es una lista o algo asi
+        return np.array([self.evaluar_P_single_t(t) for t in t_values])
+
+    # ver la interpolacion
+    def ver_interpolacion(self, num_valores = 500, titulo = "Interpolacion", ax = None):
+        '''
+        Ver la interpolacion
+        '''
+
+        # dominio para la interpolacion
+        dominio = np.linspace(self.valores_t[0], self.valores_t[-1], num_valores)
+        # interpolacion
+        interpolacion = self.interpolar(dominio)
+
+        # graficar
+        if ax is None:
+            fig, ax = plt.subplots(figsize = (5, 5))
+        ax.scatter(self.valores_t, self.valores_f_t, label = "Puntos", color = color_puntos)
+        ax.plot(dominio, interpolacion, label = "Interpolacion", color = color_interpolacion)
+        ax.set_title(titulo)
+
+
+
+class Barycentric_interpolation:
+    '''
+    Interpolacion usando un polinomio (Barycentric form)
+    '''
+    def __init__(self, valores_t, valores_f_t):
+        # valores de t:   t_0,   t_1, ...,    t_n
+        # evaluaciones: f(t_0), f(t_1), ..., f(t_n)
+
+        # poner como atributos
+        self.valores_t = valores_t
+        self.valores_f_t = valores_f_t
+        assert len(valores_t) == len(valores_f_t)
+
+        # ver cual es n
+        self.n = len(valores_t) - 1
+
+        # delimitar el conjunto de indices
+        # 0, 1, ..., n
+        self.indices = set(range(self.n+1))
+
+        # los pesos w_j se guardan como diccionario
+        self.weights = dict()
+        # pre computarlos
+        self.compute_weights()
+
+        # calcular f(t_j) * w_j
+        self.dict_f_t_times_w = {j: self.valores_f_t[j] * self.weights[j]
+                                    for j in self.indices}
+
+    # calcular pesos
+    def compute_weights(self):
+        '''
+        Weights w_j for j = 0, ..., n
+        w_j = 1/ prod_{k!=j} (t_j - t_k)
+        '''
+        # para cada peso w_j
+        for j in self.indices:
+            # ir calculando el inverso multiplicativo
+            w_j_inv = 1
+
+            # k != j
+            for k in self.indices - {j}:
+                # multiplicar por (t_j - t_k)
+                    w_j_inv *= (self.valores_t[j] - self.valores_t[k])
+
+            # ya que se tiene el inverso
+            # calcular w_j
+            self.weights[j] = 1/w_j_inv
+
+
+    # evaluar el polinomio de interpolacion en un valor
+    def evaluar_P_single_t(self, t):
+        '''
+        Evaluar el polinomio de interpolacion en un valor t
+        '''
+        # calcular independientemente numerador y denominador
+        numerador = 1
+        denominador = 1
+
+        # j = 0, ..., n
+        for j in self.indices:
+            # variable auxiliar: t - t_j
+            aux = t - self.valores_t[j]
+            # numerador y denomidador
+            numerador += self.dict_f_t_times_w[j] / aux
+            denominador += self.weights[j] / aux
+
+        # devolver la division
+        return numerador/denominador
+
+
+    # evaluar en varios
+    def interpolar(self, t_values):
+        '''
+        Evaluar el polinomio de interpolacion en un valor o en un arrray de valores
+        '''
+
+        # si es un solo valor
+        if isinstance(t_values, (float, int)):
             return self.evaluar_P_single_t(t_values)
 
         # si es una lista o algo asi
@@ -707,15 +811,15 @@ if objects.shape[0] > 0:
 with st.expander("Set parameters"):
     st.subheader("Parametros")
 
-    # distancia entre nodos para la parametrizacion
-    metodo_dist_t_largo = st.selectbox(label = "Metodo para seleccionar distancia entre puntos al parametrizar con interpolación",
-                                       options = ["Misma distancia", "Distancia en el plano"])
-    metodo_dist_t = {"Misma distancia":"equidistante", "Distancia en el plano":"plano"}[metodo_dist_t_largo]
+    # distancia entre nodos para la parametrizacion (que es como el tiempo)
+    metodo_dist_t_largo = st.selectbox(label = "Metodo para delimitar el tiempo en que la parametrizacion va de un punto a otro",
+                                       options = ["Distancia en el plano", "Tiempo Uniforme"])
+    metodo_dist_t = {"Distancia en el plano":"plano", "Tiempo Uniforme":"equidistante"}[metodo_dist_t_largo]
 
     # metodo interpolacion
     metodo_interpolacion_largo = st.selectbox(label = "Metodo para hacer interpolacion",
-                                              options = ["Cubic Spline", "Un polinomio (Lagrange interpolation)"])
-    metodo_interpolacion = {"Cubic Spline": "cubicspline", "Un polinomio (Lagrange interpolation)": "lagrange"}[metodo_interpolacion_largo]
+                                              options = ["Cubic Spline", "Un polinomio (Lagrange interpolation)", "Un polinomio (Barycentric form)"])
+    metodo_interpolacion = {"Cubic Spline": "cubicspline", "Un polinomio (Lagrange interpolation)": "lagrange", "Un polinomio (Barycentric form)": "barycentric"}[metodo_interpolacion_largo]
 
     # talvez condiciones de frontera
     if metodo_interpolacion == "cubicspline":
@@ -813,6 +917,9 @@ if st.button("Analyze", type="primary"):
         if metodo_interpolacion == "lagrange":
             interpolate_x = Lagrange_interpolation(valores_t, valores_fx_t)
             interpolate_y = Lagrange_interpolation(valores_t, valores_fy_t)
+        elif metodo_interpolacion == "barycentric ":
+            interpolate_x = Barycentric_interpolation(valores_t, valores_fx_t)
+            interpolate_x = Barycentric_interpolation(valores_t, valores_fx_t)
         elif metodo_interpolacion == "cubicspline":
             interpolate_x = CubicSpline_interpolation(valores_t, valores_fx_t, boundary_condition = bound_condition)
             interpolate_y = CubicSpline_interpolation(valores_t, valores_fy_t, boundary_condition = bound_condition)
