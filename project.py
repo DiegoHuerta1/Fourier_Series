@@ -245,7 +245,7 @@ class Barycentric_interpolation:
             denominador += self.weights[j] / aux
 
         # devolver la division
-        return numerador/denominador
+        return numerador/(denominador + np.finfo(float).eps)  # no dividir entre 0
 
 
     # evaluar en varios
@@ -1018,7 +1018,7 @@ if st.button("Analyze", type="primary"):
         coeficientes_fourier_f = fourier_f.get_coefficients()
 
         # imprimir
-        st.write("Fourier coeficients for fx:")
+        st.write("Fourier coeficients for f = fx + i fy:")
         st.write(coeficientes_fourier_f)
 
         # ver
