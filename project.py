@@ -919,7 +919,7 @@ if st.button("Analyze", type="primary"):
             interpolate_y = Lagrange_interpolation(valores_t, valores_fy_t)
         elif metodo_interpolacion == "barycentric":
             interpolate_x = Barycentric_interpolation(valores_t, valores_fx_t)
-            interpolate_x = Barycentric_interpolation(valores_t, valores_fx_t)
+            interpolate_y = Barycentric_interpolation(valores_t, valores_fy_t)
         elif metodo_interpolacion == "cubicspline":
             interpolate_x = CubicSpline_interpolation(valores_t, valores_fx_t, boundary_condition = bound_condition)
             interpolate_y = CubicSpline_interpolation(valores_t, valores_fy_t, boundary_condition = bound_condition)
