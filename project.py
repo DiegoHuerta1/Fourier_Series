@@ -723,7 +723,7 @@ drawing_mode = {"Delimitar puntos": "point", "Dibujar" : "freedraw"}[modo_input]
 if drawing_mode == "freedraw":
     num_puntos = st.slider("Numero de puntos en la curva a considerar",
                            min_value= 3, max_value= 200,
-                           value=20, step=1)
+                           value=80, step=1)
 
 
 # seleccionar el color para dibujar
@@ -842,7 +842,7 @@ with st.expander("Set parameters"):
     # max n fourier
     n_fourier = st.slider("Max n for coeficients in fourier series",
                           min_value= 0, max_value= 80,
-                          value=20, step=1)
+                          value=30, step=1)
 
 
     # numero de valores para graficar
